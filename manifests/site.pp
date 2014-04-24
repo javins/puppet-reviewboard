@@ -37,7 +37,7 @@ define reviewboard::site (
   include reviewboard
 
   if $dbpass == undef {
-    err('Postges DB password not set')
+    err('Postgres DB password not set')
   }
   if $adminpass == undef {
     err('Admin password not set')
@@ -51,10 +51,15 @@ define reviewboard::site (
     dbhost => $dbhost,
   }
 
+  case $location { # A trailing slash is required
+    /\/$/:   { $normalized_location = $location}
+    default: { $normalized_location = "${location}/" }
+  }
+
   # Run site-install
   reviewboard::site::install {$site:
     vhost      => $vhost,
-    location   => "${location}/", # Trailing slash required
+    location   => $normalized_location,
     dbtype     => $dbtype,
     dbname     => $dbname,
     dbhost     => $dbhost,
